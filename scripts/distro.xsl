@@ -348,7 +348,8 @@
       <xsl:with-param name="quantity" select="$quantity" />
       <xsl:with-param name="unit">words</xsl:with-param>
       <xsl:with-param name="en_text">words</xsl:with-param>
-      <xsl:with-param name="uk_text">слів</xsl:with-param>
+      <!-- <xsl:with-param name="uk_text">слів</xsl:with-param> -->
+      <xsl:with-param name="cs_text">slov</xsl:with-param>
     </xsl:call-template>
   </xsl:template>
 
@@ -357,7 +358,7 @@
     <xsl:param name="unit" />
     <xsl:param name="en_text" />
     <xsl:param
-      name="uk_text" />
+      name="cs_text" />
     <xsl:element name="measure">
       <xsl:attribute name="unit" select="$unit" />
       <xsl:attribute name="quantity"
@@ -369,8 +370,8 @@
       name="measure">
       <xsl:attribute name="unit" select="$unit" />
       <xsl:attribute name="quantity" select="mk:number($quantity)" />
-      <xsl:attribute name="xml:lang">uk</xsl:attribute>
-      <xsl:value-of select="concat(mk:number($quantity),' ',$uk_text)" />
+      <xsl:attribute name="xml:lang">cs</xsl:attribute>
+      <xsl:value-of select="concat(mk:number($quantity),' ',$cs_text)" />
     </xsl:element>
   </xsl:template>
 
