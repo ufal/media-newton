@@ -41,11 +41,11 @@
     <xsl:param name="id"/>
     <xsl:for-each select="tokenize(*/text(), '\n\n\n*')">
       <xsl:if test="normalize-space(.)">
-        <seg xml:id="{$id}.p{position()+1}">
+        <p xml:id="{$id}.p{position()+1}">
           <xsl:call-template name="parsePar">
             <xsl:with-param name="text" select="normalize-space(.)"/>
           </xsl:call-template>
-        </seg>
+        </p>
       </xsl:if>
     </xsl:for-each>
   </xsl:template>

@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<config xmlns="http://www.tei-c.org/ns/1.0"
+  xml:id="config_cus_1.0"
+  xml:lang="cs">
+  <teiHeader>
+    <fileDesc>
+      <titleStmt>
+        <title placeholder="*" />
+        <respStmt>
+          <persName ref="https://orcid.org/0000-0001-7953-8783">Matyáš Kopp</persName>
+          <resp xml:lang="en">TEI XML corpus encoding</resp>
+          <resp xml:lang="en" condition="TEI.ana">Linguistic annotation</resp>
+        </respStmt>
+      </titleStmt>
+      <editionStmt>
+        <edition>1.0</edition>
+      </editionStmt>
+      <extent placeholder="1" />
+      <publicationStmt>
+        <publisher />
+        <idno></idno>
+        <!--handle-->
+        <availability status="free">
+          <licence>http://creativecommons.org/licenses/by/4.0/</licence>
+          <p xml:lang="en">This work is licensed under the
+            <ref
+              target="http://creativecommons.org/licenses/by/4.0/">Creative Commons Attribution 4.0
+            International License</ref>.
+          </p>
+          <p xml:lang="cs">Toto dílo je licencováno
+            <ref
+              target="http://creativecommons.org/licenses/by/4.0/">Creative Commons Uveďte původ 4.0
+            Mezinárodní Veřejná licence</ref>.
+          </p>
+        </availability>
+      </publicationStmt>
+      <sourceDesc>
+        <bibl>
+          <title type="main" xml:lang="cs">
+            <!---->
+          </title>
+          <title type="main" xml:lang="en">
+            <!---->
+          </title>
+          <!--
+      <idno type="URI"></idno>
+      <date from="" to=""></date>
+      -->
+        </bibl>
+      </sourceDesc>
+    </fileDesc>
+    <encodingDesc>
+      <!--<projectDesc />-->
+      <tagsDecl>
+        <namespace name="http://www.tei-c.org/ns/1.0" />
+      </tagsDecl>
+    </encodingDesc>
+  </teiHeader>
+</config>

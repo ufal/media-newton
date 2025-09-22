@@ -23,27 +23,10 @@
     <fileDesc>
       <titleStmt>
         <title type="main"><xsl:value-of select="$title"/></title>
-        <respStmt>
-          <persName ref="https://orcid.org/0000-0001-7953-8783">Matyáš Kopp</persName>
-          <resp xml:lang="en">TEI XML corpus encoding</resp>
-        </respStmt>
       </titleStmt>
-      <editionStmt>
-        <edition>1.0</edition>
-      </editionStmt>
       <sourceDesc>
         <bibl>
           <title type="main" xml:lang="cs"><xsl:value-of select="$title"/></title>
-          <author sameAs="#TODO">
-            <persName>TODO</persName>
-          </author>
-          <idno type="URI">TODO</idno>
-          <!-- 
-          <date when="{$date}">{$date}</date>
-          <note type="section"><tag sameAs="#sect-52935">Zprávy z domova</tag></note>
-          <note type="tag"/>
-          <district type="domicil"></district>
-          -->
         </bibl>
       </sourceDesc>
     </fileDesc>

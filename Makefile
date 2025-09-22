@@ -14,9 +14,13 @@ TEITOK := ${DIST}/teitok
 UDPIPE := ${WORK}/udpipe
 NAMETAG := ${WORK}/nametag
 
+CONFIG := $(shell pwd)/projects/config_cus_1.0.xml
 PREFIX := cus_
 CORPUS_ID := $(PREFIX)corpus
 CORPUS_TEMPLATE := $(WORK)/$(CORPUS_ID).xml
+
+SCHEMA_TEI := tei_all
+SCHEMA := $(shell pwd)/schema/$(SCHEMA_TEI).rng
 
 JAVA-MEMORY =
 JM := $(shell test -n "$(JAVA-MEMORY)" && echo -n "-Xmx$(JAVA-MEMORY)g")
@@ -35,7 +39,7 @@ teiText2teiTextAnaUD: $(UDPIPE)
 	perl -I scripts/resources/lib scripts/resources/udpipe2/udpipe2.pl --colon2underscore \
 	                               $(TOKEN) \
 	                               --model "cs:czech-pdt-ud-2.15-241121" \
-	                               --elements "seg,head" \
+	                               --elements "p,head" \
 	                               --debug \
 	                               --no-space-in-punct \
 	                               --try2continue-on-error \
@@ -70,6 +74,7 @@ dist-tei: $(TEI)
 			anaDir=$(TEIANA) \
 	    inTaxonomiesDir=$(TAXONOMIES) \
 	    type=TEI \
+			projectConfig=$(CONFIG) \
 	    $(CORPUS_TEMPLATE)
 
 dist-tei-ana: $(TEIANA)
@@ -79,6 +84,7 @@ dist-tei-ana: $(TEIANA)
 			inHeaderDir=$(TEIheader) \
 	    inTaxonomiesDir=$(TAXONOMIES) \
 	    type=TEI.ana \
+			projectConfig=$(CONFIG) \
 	    $(CORPUS_TEMPLATE)
 
 dist-teitok: $(TEITOK)
@@ -86,6 +92,17 @@ dist-teitok: $(TEITOK)
 
 $(TEI) $(TEIANA) $(TEITOK) $(TEItext) $(TEIheader) $(TEIANAtext) $(UDPIPE) $(NAMETAG):
 	mkdir -p $@
+
+
+validate-tei: $(SCHEMA)
+	find $(TEI) -type f | xargs -I {} java $(JM) -jar ./scripts/bin/jing.jar $< {}
+
+validate-tei-ana: $(SCHEMA)
+	find $(TEIANA) -type f | xargs -I {} java $(JM) -jar ./scripts/bin/jing.jar $< {}
+
+$(SCHEMA):
+	mkdir `dirname $@` || :
+	wget https://tei-c.org/release/xml/tei/custom/schema/relaxng/$(SCHEMA_TEI).rng -O $@
 
 
 ##################
