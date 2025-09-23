@@ -26,6 +26,11 @@
     <xsl:sequence select="normalize-space($elem/PublishDate)"/>
   </xsl:function>
 
+  <xsl:function name="mk:yearmonth" as="xs:string">
+    <xsl:param name="elem" as="element(Article)"/>
+    <xsl:sequence select="substring(string(mk:date($elem)),1,7)"/>
+  </xsl:function>
+  
   <xsl:function name="mk:article">
     <xsl:param name="elem" as="element(Article)"/>
     <xsl:sequence select="$elem/Translations/ArticleTranslation[@IsOriginal='true']"/>
@@ -39,7 +44,7 @@
   <xsl:function name="mk:path" as="xs:string">
     <xsl:param name="elem" as="element(Article)"/>
     <xsl:param name="dir"/>
-    <xsl:sequence select="concat($dir,'/',mk:id($elem),'.xml')" />
+    <xsl:sequence select="concat($dir,'/',mk:yearmonth($elem),'/',mk:id($elem),'.xml')" />
   </xsl:function>
 
 
