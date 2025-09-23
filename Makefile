@@ -26,13 +26,15 @@ JAVA-MEMORY =
 JM := $(shell test -n "$(JAVA-MEMORY)" && echo -n "-Xmx$(JAVA-MEMORY)g")
 SAXON := java $(JM) -jar scripts/bin/saxon.jar
 
+DEBUG := 
+XSLDEBUG := $(shell test -n "$(DEBUG)" && echo -n "limit=2")
 # convert component files to TEI/text
 convert2teiText: $(TEItext)
-	find $(IN) -type f -name "*.xml" | xargs -I {} $(SAXON) outDir=$< prefix=$(PREFIX) -xsl:scripts/newton2teiText.xsl {}
+	find $(IN) -type f -name "*.xml" | xargs -I {} $(SAXON) outDir=$< prefix=$(PREFIX) $(XSLDEBUG) -xsl:scripts/newton2teiText.xsl {}
 
 # convert component files to TEI/teiHeader
 convert2teiHeader: $(TEIheader)
-	find $(IN) -type f -name "*.xml" | xargs -I {} $(SAXON) outDir=$< prefix=$(PREFIX) -xsl:scripts/newton2teiHeader.xsl {}
+	find $(IN) -type f -name "*.xml" | xargs -I {} $(SAXON) outDir=$< prefix=$(PREFIX) $(XSLDEBUG) -xsl:scripts/newton2teiHeader.xsl {}
 
 teiText2teiTextAnaUD: $(UDPIPE)
 	find $(TEItext) -type f -printf "%P\n" |sort > $(UDPIPE).fl

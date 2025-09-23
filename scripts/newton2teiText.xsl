@@ -10,7 +10,7 @@
   <xsl:output method="xml" indent="yes" encoding="UTF-8" />
   <xsl:import href="newton2tei-lib.xsl"/>
 
-  <xsl:template match="/Data/Topics/Topic/Summaries/Summary[10 > position()]/Articles/Article">
+  <xsl:template match="/Data/Topics/Topic/Summaries/Summary[not($limit) or $limit >= position()]/Articles/Article">
 
     <xsl:variable name="id" select="mk:id(.)"/>
     <xsl:variable name="path" select="mk:path(., $outDir)"/>

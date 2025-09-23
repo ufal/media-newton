@@ -9,6 +9,7 @@
 
   <xsl:param name="prefix"/>
   <xsl:param name="outDir"/>
+  <xsl:param name="limit"/>
   <xsl:output method="xml" indent="yes" encoding="UTF-8" />
 
   <xsl:function name="mk:sourceId" as="xs:string">
