@@ -117,7 +117,6 @@ $(addprefix slurm-,  $(SLURM-TASKS)): slurm-%: $(LOGDIR)
 		--job-name=$* \
 		--ntasks=1 \
 		--partition=$(SLURM_PARTITION) \
-		--time=$(SLURM_TIME) \
 		--cpus-per-task=$(SLURM_CPUS) \
 		--mem=$(SLURM_MEM) \
 		--output=$(LOGDIR)/%x.%j.out \
