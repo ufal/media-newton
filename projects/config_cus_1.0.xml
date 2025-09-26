@@ -5,6 +5,8 @@
   <teiHeader>
     <fileDesc>
       <titleStmt>
+        <title condition="root.TEI"></title>
+        <title condition="root.TEI.ana"></title>
         <title placeholder="*" />
         <respStmt>
           <persName ref="https://orcid.org/0000-0001-7953-8783">Matyáš Kopp</persName>
@@ -35,18 +37,7 @@
         </availability>
       </publicationStmt>
       <sourceDesc>
-        <bibl>
-          <title type="main" xml:lang="cs">
-            <!---->
-          </title>
-          <title type="main" xml:lang="en">
-            <!---->
-          </title>
-          <!--
-      <idno type="URI"></idno>
-      <date from="" to=""></date>
-      -->
-        </bibl>
+        <bibl placeholder="*"/>
       </sourceDesc>
     </fileDesc>
     <encodingDesc>

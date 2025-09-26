@@ -69,6 +69,7 @@
             mode="insertHeader">
             <xsl:with-param name="teiHeader"
               select="document(concat($inHeaderDir, '/', @href))/tei:TEI/tei:teiHeader" />
+            <xsl:with-param name="fileType">comp</xsl:with-param>
           </xsl:apply-templates>
         </doc>
         <url-new>
@@ -201,11 +202,22 @@
     <xsl:message>INFO: processing root </xsl:message>
     <xsl:result-document href="{$outRoot}">
       <xsl:message>ROOT is not implemented</xsl:message>
-      <xsl:apply-templates />
+      <xsl:apply-templates mode="root"/>
     </xsl:result-document>
   </xsl:template>
 
-
+  <!-- root -->
+  <xsl:template mode="root" match="tei:teiCorpus">
+    <xsl:copy>
+      <xsl:apply-templates mode="root" select="@*" />
+      <!-- insert corpus header -->
+      <xsl:apply-templates select="." mode="insertHeader">
+        <xsl:with-param name="fileType">root</xsl:with-param>
+      </xsl:apply-templates>
+      <xsl:copy-of select="xi:include"/>
+    </xsl:copy>
+  </xsl:template> 
+  <!-- component -->
   <xsl:template mode="comp" match="*">
     <xsl:param name="words" />
     <xsl:param name="tagUsages" />
@@ -266,7 +278,7 @@
   </xsl:template>
 
   <!-- merge header and text content -->
-  <xsl:template mode="insertHeader" match="tei:TEI">
+  <xsl:template mode="insertHeader" match="tei:TEI | tei:teiCorpus">
     <xsl:param name="teiHeader" />
     <xsl:copy>
       <xsl:copy-of select="@*" />
@@ -283,11 +295,20 @@
 
   <xsl:template match="tei:*" mode="insertConfig">
     <xsl:param name="elem"/>
+    <xsl:param name="fileType"/>
     <xsl:variable name="name" select="local-name()" />
     <xsl:choose>
-      <xsl:when test="$elem and $elem/*[local-name() = $name]">
+      <xsl:when test="not(not(@condition) 
+                           or $type = tokenize(@condition, '\s+')
+                           or $fileType = tokenize(@condition, '\s+')
+                           or concat($fileType,'.',$type) = tokenize(@condition, '\s+')
+                           )">
+      </xsl:when>
+
+<!-- deprecated: -->
+    <xsl:when test="$elem and $elem/*[local-name() = $name]">
         <xsl:choose>
-        <xsl:when test="@placeholder"> <!-- config contains only placeholder -->
+          <xsl:when test="@placeholder"> <!-- config contains only placeholder -->
             <xsl:copy-of select="$elem/*[local-name() = $name]" />
           </xsl:when>
           <xsl:when test="count($elem/*[local-name() = $name]) = 1">
@@ -302,12 +323,17 @@
             </xsl:copy>
           </xsl:when>
           <xsl:otherwise>
-            <xsl:message>  TODO: multiple elements and not placeholder - insert both</xsl:message>
+            <xsl:message>  TODO: multiple elements and not placeholder - insert both <xsl:value-of select="local-name()"/></xsl:message>
           </xsl:otherwise>
         </xsl:choose>
       </xsl:when>
       <xsl:otherwise> <!-- element is present only in config-->
-        <xsl:if test="not(@condition) or $type = tokenize(@condition, '\s+')">
+        <xsl:if test="not(@placeholder) 
+                      and (not(@condition) 
+                           or $type = tokenize(@condition, '\s+')
+                           or $fileType = tokenize(@condition, '\s+')
+                           or concat($fileType,'.',$type) = tokenize(@condition, '\s+')
+                           )">
           <xsl:copy>
             <xsl:apply-templates select="@*" mode="insertConfig" />
             <xsl:apply-templates select="* | comment() | text()" mode="insertConfig" />

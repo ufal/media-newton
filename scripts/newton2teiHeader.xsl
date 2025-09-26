@@ -25,8 +25,26 @@
         <title type="main"><xsl:value-of select="$title"/></title>
       </titleStmt>
       <sourceDesc>
-        <bibl>
-          <title type="main" xml:lang="cs"><xsl:value-of select="$title"/></title>
+        <bibl type="{./Source/MediaType/text()}">
+          <xsl:choose>
+            <xsl:when test="./Source/Parent">
+              <title type="main"><xsl:value-of select="./Source/Parent/text()"/></title>
+              <title type="sub"><xsl:value-of select="./Source/Name/text()"/></title>
+            </xsl:when>
+            <xsl:otherwise>
+              <title type="main"><xsl:value-of select="./Source/Name/text()"/></title>
+          </xsl:otherwise>
+        </xsl:choose>
+        <xsl:if test="./Section/text()">
+          <title type="section"><xsl:value-of select="./Section/text()"/></title>
+        </xsl:if>
+
+        <xsl:for-each select="tokenize(./Author/Name/text(), ', *')">
+      <xsl:if test="normalize-space(.)">
+        <author><xsl:value-of select="normalize-space(.)"/></author>
+      </xsl:if>
+    </xsl:for-each>
+
         </bibl>
       </sourceDesc>
     </fileDesc>
