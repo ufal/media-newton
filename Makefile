@@ -26,6 +26,7 @@ SCHEMA := $(shell pwd)/schema/$(SCHEMA_TEI).rng
 
 JAVA-MEMORY =
 JM := $(shell test -n "$(JAVA-MEMORY)" && echo -n "-Xmx$(JAVA-MEMORY)g")
+JAVA-MEMORY-GB = $(shell java $(JM) -XX:+PrintFlagsFinal -version 2>&1| grep " MaxHeapSize"|sed "s/^.*= *//;s/ .*$$//"|awk '{print "\t" $$1/1024/1024/1024}')
 SAXON := java $(JM) -jar scripts/bin/saxon.jar
 
 DEBUG := 
@@ -37,7 +38,7 @@ SLURM-TASKS := $(addprefix dist-, $(DISTRO-TASKS))
 
 SLURM_PARTITION ?= cpu-troja,cpu-ms
 SLURM_CPUS ?= 30
-SLURM_MEM ?= 240G
+SLURM_MEM ?= 240
 
 
 -include Makefile.dev
@@ -112,13 +113,14 @@ dist-teitok: $(TEITOK)
 
 $(addprefix slurm-,  $(SLURM-TASKS)): slurm-%: $(LOGDIR)
 	@echo "Submitting $* to slurm..."
+	@awk 'BEGIN { if ($(JAVA-MEMORY-GB) <= $(SLURM_MEM)) print "WARNING: $(JAVA-MEMORY-GB)G(Jave memory) <  $(SLURM_MEM)G (machine memory)"; else print "Memory test: passed"; }'
 	@JOBID=$$( sbatch \
 		--parsable \
 		--job-name=$* \
 		--ntasks=1 \
 		--partition=$(SLURM_PARTITION) \
 		--cpus-per-task=$(SLURM_CPUS) \
-		--mem=$(SLURM_MEM) \
+		--mem=$(SLURM_MEM)G \
 		--output=$(LOGDIR)/%x.%j.out \
 		--wrap="cd $(CURDIR) && $(MAKE) $*" ); \
 	echo "Submitted job $$JOBID for $*"
