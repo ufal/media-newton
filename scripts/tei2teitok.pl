@@ -3,7 +3,6 @@ use strict;
 use utf8;
 use XML::LibXML;
 use Getopt::Long;
-use String::Substitution;
 use File::Basename;
 
 $\ = "\n"; $, = "\t";
