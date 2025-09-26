@@ -14,6 +14,8 @@ TEITOK := ${DIST}/teitok
 UDPIPE := ${WORK}/udpipe
 NAMETAG := ${WORK}/nametag
 
+LOGDIR := $(shell pwd)/logs/
+
 CONFIG := $(shell pwd)/projects/config_cus_1.0.xml
 PREFIX := cus_
 CORPUS_ID := $(PREFIX)corpus
@@ -28,6 +30,18 @@ SAXON := java $(JM) -jar scripts/bin/saxon.jar
 
 DEBUG := 
 XSLDEBUG := $(shell test -n "$(DEBUG)" && echo -n "limit=2")
+
+
+DISTRO-TASKS := tei tei-ana teitok
+SLURM-TASKS := $(addprefix dist-, $(DISTRO-TASKS))
+
+SLURM_PARTITION ?= cpu-troja,cpu-ms
+SLURM_CPUS ?= 30
+SLURM_MEM ?= 240G
+
+
+-include Makefile.dev
+
 # convert component files to TEI/text
 convert2teiText: $(TEItext)
 	find $(IN) -type f -name "*.xml" | xargs -I {} $(SAXON) outDir=$< prefix=$(PREFIX) $(XSLDEBUG) -xsl:scripts/newton2teiText.xsl {}
@@ -90,9 +104,27 @@ dist-tei-ana: $(TEIANA)
 	    $(CORPUS_TEMPLATE)
 
 dist-teitok: $(TEITOK)
-	echo "TODO not implemented"
+	find $(TEIANA) -type f -printf "%P\n" |grep -v '$(CORPUS_ID)\.'| sed -E "s/(\.ana)?\.xml$$//" |sort > ${WORK}/dist-tei-ana.fl
+	cat ${WORK}/dist-tei-ana.fl \
+	  | xargs -I {} perl scripts/tei2teitok.pl \
+		                            --in $(TEIANA)/{}.ana.xml \
+		                            --out $(TEITOK)/{}.tt.xml
 
-$(TEI) $(TEIANA) $(TEITOK) $(TEItext) $(TEIheader) $(TEIANAtext) $(UDPIPE) $(NAMETAG):
+$(addprefix slurm-,  $(SLURM-TASKS)): slurm-%: $(LOGDIR)
+	@echo "Submitting $* to slurm..."
+	@JOBID=$$( sbatch \
+		--parsable \
+		--job-name=$* \
+		--ntasks=1 \
+		--partition=$(SLURM_PARTITION) \
+		--time=$(SLURM_TIME) \
+		--cpus-per-task=$(SLURM_CPUS) \
+		--mem=$(SLURM_MEM) \
+		--output=$(LOGDIR)/%x.%j.out \
+		--wrap="cd $(CURDIR) && $(MAKE) $*" ); \
+	echo "Submitted job $$JOBID for $*"
+
+$(TEI) $(TEIANA) $(TEITOK) $(TEItext) $(TEIheader) $(TEIANAtext) $(UDPIPE) $(NAMETAG) $(LOGDIR):
 	mkdir -p $@
 
 
