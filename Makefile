@@ -58,6 +58,7 @@ teiText2teiTextAnaUD: $(UDPIPE)
 	                               --model "cs:czech-pdt-ud-2.15-241121" \
 	                               --elements "p,head" \
 	                               --debug \
+																 --use-xpos \
 	                               --no-space-in-punct \
 	                               --try2continue-on-error \
 	                               --filelist $(UDPIPE).fl \
