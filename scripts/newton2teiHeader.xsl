@@ -15,6 +15,7 @@
     <xsl:variable name="path" select="mk:path(., $outDir)"/>
     <xsl:message select="concat('INFO: exporting ',$path)"/>
     <xsl:variable name="title" select="mk:title(.)"/>
+    <xsl:variable name="datetime" select="mk:date(.)"/>
 
     <xsl:result-document href="{$path}" method="xml" indent="yes" encoding="UTF-8" >
 
@@ -44,7 +45,9 @@
         <author><xsl:value-of select="normalize-space(.)"/></author>
       </xsl:if>
     </xsl:for-each>
-
+      <xsl:if test="$datetime">
+        <date when="{$datetime}"/>
+      </xsl:if>
         </bibl>
       </sourceDesc>
     </fileDesc>

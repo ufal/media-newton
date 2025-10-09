@@ -17,17 +17,25 @@
     <xsl:message select="concat('INFO: exporting ',$path)"/>
     <xsl:variable name="title" select="mk:title(.)"/>
     <xsl:variable name="article" select="mk:article(.)"/>
+    <xsl:variable name="front">
+      <front>
+        <head type="title" xml:id="{$id}.p1"><xsl:value-of select="$title"/></head>
+        <xsl:apply-templates select="./Pictures/Picture[normalize-space(.//Description/text())]">
+          <xsl:with-param name="id" select="$id"/>
+          <xsl:with-param name="increment" select="1"/>
+        </xsl:apply-templates>
+      </front>
+    </xsl:variable>
     <xsl:result-document href="{$path}" method="xml" indent="yes" encoding="UTF-8" >
 
 <TEI xmlns="http://www.tei-c.org/ns/1.0" xml:id="{$id}" xml:lang="cs">
   <text>
-    <front>
-      <head type="title" xml:id="{$id}.p1"><xsl:value-of select="$title"/></head>
-    </front>
+    <xsl:copy-of select="$front"/>
     <body>
       <div type="text">
         <xsl:apply-templates select="$article/Content">
           <xsl:with-param name="id" select="$id"/>
+          <xsl:with-param name="increment" select="count($front//*[starts-with(@xml:id,concat($id,'.p'))])"/>
           </xsl:apply-templates>
       </div>
     </body>
@@ -39,9 +47,10 @@
 
   <xsl:template match="Content">
     <xsl:param name="id"/>
+    <xsl:param name="increment"/>
     <xsl:for-each select="tokenize(*/text(), '\n\n\n*')">
       <xsl:if test="normalize-space(.)">
-        <p xml:id="{$id}.p{position()+1}">
+        <p xml:id="{$id}.p{position()+number($increment)}">
           <xsl:call-template name="parsePar">
             <xsl:with-param name="text" select="normalize-space(.)"/>
           </xsl:call-template>
@@ -66,5 +75,18 @@
 -->
     <xsl:value-of select="$text"/>
   </xsl:template>
+  
+  <xsl:template match="Picture">
+    <xsl:param name="id"/>
+    <xsl:param name="increment"/>
+    <figure>
+      <p xml:id="{$id}.p{position()+number($increment)}">
+        <xsl:call-template name="parsePar">
+          <xsl:with-param name="text" select="normalize-space(./Description)"/>
+        </xsl:call-template>
+      </p>
+    </figure>
+  </xsl:template>
+
 
 </xsl:stylesheet>
