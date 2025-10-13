@@ -70,7 +70,8 @@ teiText2teiTextAnaNER: $(NAMETAG)
 	perl -I scripts/resources/lib scripts/resources/nametag2/nametag2.pl \
 	                                 $(TOKEN) \
 																	 --debug \
-	                                 --model "cs:nametag3-multilingual-conll-250203" \
+	                                 --model "cs:nametag3-czech-cnec2.0-240830" \
+																	 --cnec2conll2003 \
 	                                 --filelist $(NAMETAG).fl \
 	                                 --input-dir $(UDPIPE) \
 	                                 --output-dir $(NAMETAG)

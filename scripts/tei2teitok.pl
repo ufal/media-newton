@@ -59,6 +59,14 @@ foreach my $node ( $xml->findnodes("//w | //pc") ) {
 	$node->setAttribute("type", $nodetype);
 };
 
+# Rename named entities attributes and remove CNEC prefixes
+foreach my $node ( $xml->findnodes("//text//*[\@ana][contains(' name date time email ref num unit ',concat(' ',local-name(),' ' ))]") ) {
+	my $val = $node->getAttribute('ana');
+	if ( $val =~ s/^.*ne:([^ "]+).*?$/$1/ ) {
+		$node->setAttribute('cnec', $val);
+	}
+};
+
 
 # Set UD back to @head and such
 foreach my $node ( $xml->findnodes("//linkGrp[\@type=\"UD-SYN\"]/link") ) {
