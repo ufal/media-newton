@@ -13,6 +13,9 @@ TEIANA := ${DIST}/tei-ana
 TEITOK := ${DIST}/teitok
 UDPIPE := ${WORK}/udpipe
 NAMETAG := ${WORK}/nametag
+cNAMETAG := ${WORK}/nametag-conllu
+cSOUDEC :=  ${WORK}/soudec-conllu
+SOUDEC :=  ${WORK}/soudec
 
 LOGDIR := $(shell pwd)/logs/
 
@@ -76,6 +79,16 @@ teiText2teiTextAnaNER: $(NAMETAG)
 	                                 --input-dir $(UDPIPE) \
 	                                 --output-dir $(NAMETAG)
 
+teiTextAnaNER2conlluNER: $(cNAMETAG)
+	find $(NAMETAG) -type f -printf "%P\n" |sort > $<.fl
+	cat $<.fl |sed 's/.xml$$//'| xargs -I {} $(SAXON) outDir=$< -xsl:scripts/tei2conllu.xsl $(NAMETAG)/{}.xml -o:$(cNAMETAG)/{}.conllu
+
+conlluNER2conlluSOUDEC: $(cSOUDEC)
+	find $(cNAMETAG) -type f -printf "%P\n" |sort > $<.fl
+
+conlluSOUDEC2teiTextAnaSOUDEC: $(SOUDEC)
+	find $(cSOUDEC) -type f -printf "%P\n" |sort > $<.fl
+
 corpus-template:
 	echo '<?xml version="1.0" encoding="UTF-8"?>' > $(CORPUS_TEMPLATE)
 	echo '<teiCorpus xmlns="http://www.tei-c.org/ns/1.0"' >> $(CORPUS_TEMPLATE)
@@ -99,7 +112,7 @@ dist-tei: $(TEI)
 dist-tei-ana: $(TEIANA)
 	$(SAXON) -xsl:scripts/distro.xsl \
 	    outDir=$< \
-			inComponentDir=$(NAMETAG) \
+			inComponentDir=$(SOUDEC) \
 			inHeaderDir=$(TEIheader) \
 	    inTaxonomiesDir=$(TAXONOMIES) \
 	    type=TEI.ana \
@@ -127,7 +140,7 @@ $(addprefix slurm-,  $(SLURM-TASKS)): slurm-%: $(LOGDIR)
 		--wrap="cd $(CURDIR) && $(MAKE) $*" ); \
 	echo "Submitted job $$JOBID for $*"
 
-$(TEI) $(TEIANA) $(TEITOK) $(TEItext) $(TEIheader) $(TEIANAtext) $(UDPIPE) $(NAMETAG) $(LOGDIR):
+$(TEI) $(TEIANA) $(TEITOK) $(TEItext) $(TEIheader) $(TEIANAtext) $(UDPIPE) $(NAMETAG) $(cNAMETAG) $(cSOUDEC) $(SOUDEC) $(LOGDIR):
 	mkdir -p $@
 
 
