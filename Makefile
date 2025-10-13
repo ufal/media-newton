@@ -81,10 +81,15 @@ teiText2teiTextAnaNER: $(NAMETAG)
 
 teiTextAnaNER2conlluNER: $(cNAMETAG)
 	find $(NAMETAG) -type f -printf "%P\n" |sort > $<.fl
-	cat $<.fl |sed 's/.xml$$//'| xargs -I {} $(SAXON) outDir=$< -xsl:scripts/tei2conllu.xsl $(NAMETAG)/{}.xml -o:$(cNAMETAG)/{}.conllu
+	cat $<.fl | sed 's@[^/]*$$@@'|xargs -I {} mkdir -p $(cNAMETAG)/{}
+	cat $<.fl |sed 's/.xml$$//'| parallel -P1 '$(SAXON) outDir=$< -xsl:scripts/tei2conllu.xsl $(NAMETAG)/{}.xml | perl ./scripts/addTokenRange2conllu.pl > $(cNAMETAG)/{}.conllu'
+
 
 conlluNER2conlluSOUDEC: $(cSOUDEC)
 	find $(cNAMETAG) -type f -printf "%P\n" |sort > $<.fl
+	cat $<.fl | sed 's@[^/]*$$@@'|xargs -I {} mkdir -p $(cSOUDEC)/{}
+	cat $<.fl | parallel 'perl ./scripts/resources/soudec/system/soudec.pl --input-file $(cNAMETAG)/{} --ll 0 --input-format conllu --output-format conllu > $(cSOUDEC)/{}'
+
 
 conlluSOUDEC2teiTextAnaSOUDEC: $(SOUDEC)
 	find $(cSOUDEC) -type f -printf "%P\n" |sort > $<.fl
@@ -156,9 +161,12 @@ $(SCHEMA):
 
 
 ##################
-prereq: parczech
+prereq: parczech soudec
 
-
+soudec: scripts/resources
+	git clone https://github.com/matyaskopp/soudec.git $</soudec ;\
+	cd $</soudec ;\
+	git checkout conllu-input
 
 parczech: scripts/resources
 	git clone https://github.com/ufal/ParCzech.git --no-checkout $</ParCzech --depth 10 -b master ;\
