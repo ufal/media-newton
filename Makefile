@@ -42,7 +42,7 @@ XSLDEBUG := $(shell test -n "$(DEBUG)" && echo -n "limit=2")
 
 
 DISTRO-TASKS := tei tei-ana teitok
-SLURM-TASKS := $(addprefix dist-, $(DISTRO-TASKS)) teiTextAnaNER2conlluNER conlluNER2conlluSOUDEC conlluSOUDEC2teiTextAnaSOUDEC
+SLURM-TASKS := $(addprefix dist-, $(DISTRO-TASKS)) teiTextAnaNER2teiSOUDEC
 
 SLURM_PARTITION ?= cpu-troja,cpu-ms
 SLURM_CPUS ?= 30
