@@ -5,6 +5,10 @@ IN := ${DATA}source
 DIST := ${DATA}dist
 WORK := ${DATA}work
 
+PERLBREW_ROOT=~/perl5/perlbrew
+PERL := $(shell test -n "$(USE_PERL)" && echo -n "$(PERLBREW_ROOT)/perls/$(USE_PERL)/bin/perl" || echo -n "perl")
+
+
 TEIheader := ${WORK}/tei-header
 TEItext := ${WORK}/tei-text
 TEIANAtext := ${WORK}/tei-ana-text
@@ -57,7 +61,7 @@ convert2teiHeader: $(TEIheader)
 
 teiText2teiTextAnaUD: $(UDPIPE)
 	find $(TEItext) -type f -printf "%P\n" |sort > $(UDPIPE).fl
-	perl -I scripts/resources/lib scripts/resources/udpipe2/udpipe2.pl --colon2underscore \
+	$(PERL) -I scripts/resources/lib scripts/resources/udpipe2/udpipe2.pl --colon2underscore \
 	                               $(TOKEN) \
 	                               --model "cs:czech-pdt-ud-2.15-241121" \
 	                               --elements "p,head" \
@@ -71,7 +75,7 @@ teiText2teiTextAnaUD: $(UDPIPE)
 
 teiText2teiTextAnaNER: $(NAMETAG)
 	find $(UDPIPE) -type f -printf "%P\n" |sort > $(NAMETAG).fl
-	perl -I scripts/resources/lib scripts/resources/nametag2/nametag2.pl \
+	$(PERL) -I scripts/resources/lib scripts/resources/nametag2/nametag2.pl \
 	                                 $(TOKEN) \
 																	 --debug \
 	                                 --model "cs:nametag3-czech-cnec2.0-240830" \
@@ -86,18 +90,18 @@ teiTextAnaNER2teiSOUDEC: _teiTextAnaNER2conlluNER _conlluNER2conlluSOUDEC_conllu
 _teiTextAnaNER2conlluNER: $(cNAMETAG)
 	find $(NAMETAG) -type f -printf "%P\n" |sort > $<.fl
 	cat $<.fl | sed 's@[^/]*$$@@'|xargs -I {} mkdir -p $(cNAMETAG)/{}
-	cat $<.fl |sed 's/.xml$$//'| parallel -P$(THREADS) '$(SAXON) outDir=$< -xsl:scripts/tei2conllu.xsl $(NAMETAG)/{}.xml | perl ./scripts/addTokenRange2conllu.pl > $(cNAMETAG)/{}.conllu'
+	cat $<.fl |sed 's/.xml$$//'| parallel -P$(THREADS) '$(SAXON) outDir=$< -xsl:scripts/tei2conllu.xsl $(NAMETAG)/{}.xml | $(PERL) ./scripts/addTokenRange2conllu.pl > $(cNAMETAG)/{}.conllu'
 
 
 _conlluNER2conlluSOUDEC: $(cSOUDEC)
 	find $(cNAMETAG) -type f -printf "%P\n" |sort > $<.fl
 	cat $<.fl | sed 's@[^/]*$$@@'|xargs -I {} mkdir -p $(cSOUDEC)/{}
-	cat $<.fl | parallel -P$(THREADS) 'perl ./scripts/resources/soudec/system/soudec.pl --input-file $(cNAMETAG)/{} --input-format conllu --output-format conllu > $(cSOUDEC)/{}'
+	cat $<.fl | parallel -P$(THREADS) '$(PERL) ./scripts/resources/soudec/system/soudec.pl --input-file $(cNAMETAG)/{} --input-format conllu --output-format conllu > $(cSOUDEC)/{}'
 
 _conlluSOUDEC2teiSOUDEC: $(SOUDEC)
 	find $(cSOUDEC) -type f -printf "%P\n" |sort > $<.fl
 	cat $<.fl | sed 's@[^/]*$$@@'|xargs -I {} mkdir -p $(SOUDEC)/{}
-	cat $<.fl | parallel -P$(THREADS) 'perl ./scripts/conlluSoudec2teiStandOffSoudec.pl {/.} < $(cSOUDEC)/{} > $(SOUDEC)/{.}.xml'
+	cat $<.fl | parallel -P$(THREADS) '$(PERL) ./scripts/conlluSoudec2teiStandOffSoudec.pl {/.} < $(cSOUDEC)/{} > $(SOUDEC)/{.}.xml'
 
 corpus-template:
 	echo '<?xml version="1.0" encoding="UTF-8"?>' > $(CORPUS_TEMPLATE)
@@ -133,7 +137,7 @@ dist-tei-ana: $(TEIANA)
 dist-teitok: $(TEITOK)
 	find $(TEIANA) -type f -printf "%P\n" |grep -v '$(CORPUS_ID)\.'| sed -E "s/(\.ana)?\.xml$$//" |sort > ${WORK}/dist-tei-ana.fl
 	cat ${WORK}/dist-tei-ana.fl \
-	  | xargs -I {} perl scripts/tei2teitok.pl \
+	  | xargs -I {} $(PERL) scripts/tei2teitok.pl \
 		                            --in $(TEIANA)/{}.ana.xml \
 		                            --out $(TEITOK)/{}.tt.xml
 
