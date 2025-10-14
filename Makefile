@@ -37,12 +37,13 @@ XSLDEBUG := $(shell test -n "$(DEBUG)" && echo -n "limit=2")
 
 
 DISTRO-TASKS := tei tei-ana teitok
-SLURM-TASKS := $(addprefix dist-, $(DISTRO-TASKS))
+SLURM-TASKS := $(addprefix dist-, $(DISTRO-TASKS)) teiTextAnaNER2conlluNER conlluNER2conlluSOUDEC conlluSOUDEC2teiTextAnaSOUDEC
 
 SLURM_PARTITION ?= cpu-troja,cpu-ms
 SLURM_CPUS ?= 30
 SLURM_MEM ?= 240
 
+THREADS ?= 1
 
 -include Makefile.dev
 
@@ -79,20 +80,24 @@ teiText2teiTextAnaNER: $(NAMETAG)
 	                                 --input-dir $(UDPIPE) \
 	                                 --output-dir $(NAMETAG)
 
-teiTextAnaNER2conlluNER: $(cNAMETAG)
+
+teiTextAnaNER2teiSOUDEC: _teiTextAnaNER2conlluNER _conlluNER2conlluSOUDEC_conlluSOUDEC2teiSOUDEC
+
+_teiTextAnaNER2conlluNER: $(cNAMETAG)
 	find $(NAMETAG) -type f -printf "%P\n" |sort > $<.fl
 	cat $<.fl | sed 's@[^/]*$$@@'|xargs -I {} mkdir -p $(cNAMETAG)/{}
-	cat $<.fl |sed 's/.xml$$//'| parallel -P1 '$(SAXON) outDir=$< -xsl:scripts/tei2conllu.xsl $(NAMETAG)/{}.xml | perl ./scripts/addTokenRange2conllu.pl > $(cNAMETAG)/{}.conllu'
+	cat $<.fl |sed 's/.xml$$//'| parallel -P$(THREADS) '$(SAXON) outDir=$< -xsl:scripts/tei2conllu.xsl $(NAMETAG)/{}.xml | perl ./scripts/addTokenRange2conllu.pl > $(cNAMETAG)/{}.conllu'
 
 
-conlluNER2conlluSOUDEC: $(cSOUDEC)
+_conlluNER2conlluSOUDEC: $(cSOUDEC)
 	find $(cNAMETAG) -type f -printf "%P\n" |sort > $<.fl
 	cat $<.fl | sed 's@[^/]*$$@@'|xargs -I {} mkdir -p $(cSOUDEC)/{}
-	cat $<.fl | parallel 'perl ./scripts/resources/soudec/system/soudec.pl --input-file $(cNAMETAG)/{} --ll 0 --input-format conllu --output-format conllu > $(cSOUDEC)/{}'
+	cat $<.fl | parallel -P$(THREADS) 'perl ./scripts/resources/soudec/system/soudec.pl --input-file $(cNAMETAG)/{} --input-format conllu --output-format conllu > $(cSOUDEC)/{}'
 
-
-conlluSOUDEC2teiTextAnaSOUDEC: $(SOUDEC)
+_conlluSOUDEC2teiSOUDEC: $(SOUDEC)
 	find $(cSOUDEC) -type f -printf "%P\n" |sort > $<.fl
+	cat $<.fl | sed 's@[^/]*$$@@'|xargs -I {} mkdir -p $(SOUDEC)/{}
+	cat $<.fl | parallel -P$(THREADS) 'perl ./scripts/conlluSoudec2teiStandOffSoudec.pl {/.} < $(cSOUDEC)/{} > $(SOUDEC)/{.}.xml'
 
 corpus-template:
 	echo '<?xml version="1.0" encoding="UTF-8"?>' > $(CORPUS_TEMPLATE)
@@ -117,7 +122,8 @@ dist-tei: $(TEI)
 dist-tei-ana: $(TEIANA)
 	$(SAXON) -xsl:scripts/distro.xsl \
 	    outDir=$< \
-			inComponentDir=$(SOUDEC) \
+			inComponentDir=$(NAMETAG) \
+			inSouDeCDir=$(SOUDEC) \
 			inHeaderDir=$(TEIheader) \
 	    inTaxonomiesDir=$(TAXONOMIES) \
 	    type=TEI.ana \
@@ -142,7 +148,7 @@ $(addprefix slurm-,  $(SLURM-TASKS)): slurm-%: $(LOGDIR)
 		--cpus-per-task=$(SLURM_CPUS) \
 		--mem=$(SLURM_MEM)G \
 		--output=$(LOGDIR)/%x.%j.out \
-		--wrap="cd $(CURDIR) && $(MAKE) $*" ); \
+		--wrap="cd $(CURDIR) && $(MAKE) $* THREADS=$(SLURM_CPUS)" ); \
 	echo "Submitted job $$JOBID for $*"
 
 $(TEI) $(TEIANA) $(TEITOK) $(TEItext) $(TEIheader) $(TEIANAtext) $(UDPIPE) $(NAMETAG) $(cNAMETAG) $(cSOUDEC) $(SOUDEC) $(LOGDIR):

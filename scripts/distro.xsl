@@ -13,6 +13,7 @@
 
   <xsl:param name="outDir" />
   <xsl:param name="inComponentDir" />
+  <xsl:param name="inSouDeCDir" />
   <xsl:param name="inHeaderDir" />
   <xsl:param name="anaDir" />
   <xsl:param name="inTaxonomiesDir" />
@@ -70,6 +71,11 @@
             <xsl:with-param name="teiHeader"
               select="document(concat($inHeaderDir, '/', @href))/tei:TEI/tei:teiHeader" />
             <xsl:with-param name="fileType">comp</xsl:with-param>
+            <xsl:with-param name="soudec">
+              <xsl:if test="$inSouDeCDir">
+                <xsl:copy-of select="document(concat($inSouDeCDir, '/', @href))/*/*"/>
+              </xsl:if>
+            </xsl:with-param>
           </xsl:apply-templates>
         </doc>
         <url-new>
@@ -280,6 +286,7 @@
   <!-- merge header and text content -->
   <xsl:template mode="insertHeader" match="tei:TEI | tei:teiCorpus">
     <xsl:param name="teiHeader" />
+    <xsl:param name="soudec" />
     <xsl:copy>
       <xsl:copy-of select="@*" />
       <!-- <xsl:apply-templates select="$teiHeader" mode="insertHeader"/> předělat na volání
@@ -290,6 +297,9 @@
         </xsl:apply-templates>
       </teiHeader>
       <xsl:copy-of select="./*" />
+      <xsl:if test="$soudec">
+        <xsl:copy-of select="$soudec/*" />
+      </xsl:if>
     </xsl:copy>
   </xsl:template>
 
