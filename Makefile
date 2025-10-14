@@ -86,7 +86,7 @@ teiText2teiTextAnaNER: $(NAMETAG)
 	                                 --output-dir $(NAMETAG)
 
 
-teiTextAnaNER2teiSOUDEC: _teiTextAnaNER2conlluNER _conlluNER2conlluSOUDEC_conlluSOUDEC2teiSOUDEC
+teiTextAnaNER2teiSOUDEC: _teiTextAnaNER2conlluNER _conlluNER2conlluSOUDEC _conlluSOUDEC2teiSOUDEC
 
 _teiTextAnaNER2conlluNER: $(cNAMETAG)
 	find $(NAMETAG) -type f -printf "%P\n" |sort > $<.fl
