@@ -7,6 +7,7 @@ WORK := ${DATA}work
 
 PERLBREW_ROOT=~/perl5/perlbrew
 PERL := $(shell test -n "$(USE_PERL)" && echo -n "$(PERLBREW_ROOT)/perls/$(USE_PERL)/bin/perl" || echo -n "perl")
+SLURM_PERL := $(shell test -n "$(USE_PERL)" && echo -n "USE_PERL=$(USE_PERL)")
 
 
 TEIheader := ${WORK}/tei-header
@@ -152,7 +153,7 @@ $(addprefix slurm-,  $(SLURM-TASKS)): slurm-%: $(LOGDIR)
 		--cpus-per-task=$(SLURM_CPUS) \
 		--mem=$(SLURM_MEM)G \
 		--output=$(LOGDIR)/%x.%j.out \
-		--wrap="cd $(CURDIR) && $(MAKE) $* THREADS=$(SLURM_CPUS)" ); \
+		--wrap="cd $(CURDIR) && $(MAKE) $* THREADS=$(SLURM_CPUS) $(SLURM_PERL)" ); \
 	echo "Submitted job $$JOBID for $*"
 
 $(TEI) $(TEIANA) $(TEITOK) $(TEItext) $(TEIheader) $(TEIANAtext) $(UDPIPE) $(NAMETAG) $(cNAMETAG) $(cSOUDEC) $(SOUDEC) $(LOGDIR):
