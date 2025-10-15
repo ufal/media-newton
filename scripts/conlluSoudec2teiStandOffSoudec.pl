@@ -9,6 +9,14 @@ my @order;
 
 my $doc_id = shift @ARGV;
 
+my %category_map = (
+  a => 'anonymous',
+  ap => 'anonymous-partial',
+  u => 'unofficial',
+  onp => 'official-non-political',
+  op => 'official-political',
+);
+
 while (<>) {
   chomp;
   my ($sd, $tei) = ("", "");
@@ -32,7 +40,10 @@ while (<>) {
 		}
 		$groups{$sd_num}->{$sd_type} //= {tokens => []};
     push @{$groups{$sd_num}->{$sd_type}->{tokens}}, $tei;
-		$groups{$sd_num}->{$sd_type}->{category} = $sd_cat if $sd_cat;
+    if($sd_cat) {
+		  $groups{$sd_num}->{$sd_type}->{category} = $category_map{$sd_cat}//$sd_cat;
+      print STDERR "ERROR: unknown category $sd_cat in $tei\n" unless exists $category_map{$sd_cat};
+    }
   }
 }
 

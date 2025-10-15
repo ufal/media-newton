@@ -8,6 +8,7 @@ use File::Basename;
 $\ = "\n"; $, = "\t";
 
 my ($debug, $verbose, $filename, $outfile);
+my ($stand_off_type, $stand_off_pref, $stand_off_val_patch, $stand_off_remove);
 
 GetOptions (
             'debug' => \$debug,
@@ -96,6 +97,50 @@ for my $base ( keys %id2node ) {
 		}
 	};
 };
+
+
+# Standoff annotations
+my %standoff = (
+	ATTRIBUTION => {
+		type_prefix => 'a',
+		ana_prefix => 'attrib',
+	}
+);
+
+for my $standoff_type (keys %standoff) {
+  my $standoffSpanGrp = $xml->findnodes(sprintf('/TEI/standOff[@type="%s"]',$standoff_type))->[0];
+  my $resultSpanGrp = $xml->findnodes("/TEI/text")->[0]->addNewChild('','spanGrp');
+  $resultSpanGrp->setAttribute("type",$standoff_type);
+  # loop over links
+	my $linkGrp = $standoffSpanGrp->findnodes(sprintf('./linkGrp[@type="%s"]', $standoff_type))->[0];
+	my @names = split / /, $linkGrp->getAttribute('targFunc');
+	my %links;
+	for my $link ($linkGrp->findnodes('./link')){
+		my @values = map {s/#//;$_} split / /, $link->getAttribute('target');
+		print STDERR "WARN: invalid link\n" if @names != @values;
+		for my $ni (0..$#names){
+			my $id = $values[$ni];
+      for my $vi (0..$#values){
+				next if $ni == $vi;
+        $links{$values[$vi]} //= {};
+				$links{$values[$vi]}->{$names[$ni]} //= [];
+				push @{$links{$values[$vi]}->{$names[$ni]}}, $id;
+  		}
+		}
+  }
+  for my $span ($standoffSpanGrp->findnodes(sprintf('./spanGrp[@type="%s"]/span', $standoff_type))){
+		$span->unbindNode;
+		$resultSpanGrp->addChild($span);
+    for my $link_name (keys %{$links{$span->getAttribute('id')}//{}}){
+		  $span->setAttribute($standoff{$standoff_type}->{type_prefix}.$link_name,join(' ',@{$links{$span->getAttribute('id')}->{$link_name}}));
+		}
+		my $ana = $span->getAttribute('ana');
+    $ana =~ s/.*\Q$standoff{$standoff_type}->{ana_prefix}\E:([^ ]*).*/$1/;
+		$span->setAttribute($standoff{$standoff_type}->{type_prefix}."type",$ana);
+		$span->setAttribute("corresp",$span->getAttribute('target'));
+	}
+	$standoffSpanGrp->unbindNode;
+}
 
 
 my $outdir = dirname $outfile;

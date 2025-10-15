@@ -42,7 +42,7 @@ XSLDEBUG := $(shell test -n "$(DEBUG)" && echo -n "limit=2")
 
 
 DISTRO-TASKS := tei tei-ana teitok
-SLURM-TASKS := $(addprefix dist-, $(DISTRO-TASKS)) teiTextAnaNER2teiSOUDEC
+SLURM-TASKS := $(addprefix dist-, $(DISTRO-TASKS)) teiTextAnaNER2teiSOUDEC DEV
 
 SLURM_PARTITION ?= cpu-troja,cpu-ms
 SLURM_CPUS ?= 30
@@ -90,18 +90,18 @@ teiTextAnaNER2teiSOUDEC: _teiTextAnaNER2conlluNER _conlluNER2conlluSOUDEC _conll
 
 _teiTextAnaNER2conlluNER: $(cNAMETAG)
 	find $(NAMETAG) -type f -printf "%P\n" |sort > $<.fl
-	cat $<.fl | sed 's@[^/]*$$@@'|xargs -I {} mkdir -p $(cNAMETAG)/{}
+	cat $<.fl | sed 's@[^/]*$$@@'|sort|uniq|xargs -I {} mkdir -p $(cNAMETAG)/{}
 	cat $<.fl |sed 's/.xml$$//'| parallel -P$(THREADS) '$(SAXON) outDir=$< -xsl:scripts/tei2conllu.xsl $(NAMETAG)/{}.xml | $(PERL) ./scripts/addTokenRange2conllu.pl > $(cNAMETAG)/{}.conllu'
 
 
 _conlluNER2conlluSOUDEC: $(cSOUDEC)
 	find $(cNAMETAG) -type f -printf "%P\n" |sort > $<.fl
-	cat $<.fl | sed 's@[^/]*$$@@'|xargs -I {} mkdir -p $(cSOUDEC)/{}
+	cat $<.fl | sed 's@[^/]*$$@@'|sort|uniq|xargs -I {} mkdir -p $(cSOUDEC)/{}
 	cat $<.fl | parallel -P$(THREADS) '$(PERL) ./scripts/resources/soudec/system/soudec.pl --input-file $(cNAMETAG)/{} --input-format conllu --output-format conllu > $(cSOUDEC)/{}'
 
 _conlluSOUDEC2teiSOUDEC: $(SOUDEC)
 	find $(cSOUDEC) -type f -printf "%P\n" |sort > $<.fl
-	cat $<.fl | sed 's@[^/]*$$@@'|xargs -I {} mkdir -p $(SOUDEC)/{}
+	cat $<.fl | sed 's@[^/]*$$@@'|sort|uniq|xargs -I {} mkdir -p $(SOUDEC)/{}
 	cat $<.fl | parallel -P$(THREADS) '$(PERL) ./scripts/conlluSoudec2teiStandOffSoudec.pl {/.} < $(cSOUDEC)/{} > $(SOUDEC)/{.}.xml'
 
 corpus-template:

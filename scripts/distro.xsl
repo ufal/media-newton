@@ -298,7 +298,9 @@
       </teiHeader>
       <xsl:copy-of select="./*" />
       <xsl:if test="$soudec">
-        <xsl:copy-of select="$soudec/*" />
+        <standOff type="ATTRIBUTION">
+          <xsl:copy-of select="$soudec/*" />
+        </standOff>
       </xsl:if>
     </xsl:copy>
   </xsl:template>
