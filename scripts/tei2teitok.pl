@@ -7,7 +7,7 @@ use File::Basename;
 
 $\ = "\n"; $, = "\t";
 
-my ($debug, $verbose, $filename, $outfile);
+my ($debug, $verbose, $filename, $outfile, $outdir_standoff);
 my ($stand_off_type, $stand_off_pref, $stand_off_val_patch, $stand_off_remove);
 
 GetOptions (
@@ -15,6 +15,7 @@ GetOptions (
             'verbose' => \$verbose,
             'in=s' => \$filename,
             'out=s' => \$outfile,
+            'outdir-standoff=s' => \$outdir_standoff,
         );
 
 if ( !$filename ) { $filename = shift; };
@@ -140,6 +141,14 @@ for my $standoff_type (keys %standoff) {
 		$span->setAttribute("corresp",$span->getAttribute('target'));
 	}
 	$standoffSpanGrp->unbindNode;
+	if($outdir_standoff){
+    mkdir($outdir_standoff) unless -d $outdir_standoff;
+		my $out_standoff_file = $outdir_standoff."/".$standoff{$standoff_type}->{ana_prefix}."_".basename($outfile);
+    open OUT,">:raw", "$out_standoff_file";
+    print OUT $resultSpanGrp->toString;
+    close OUT;
+    print "Saved annotation to $out_standoff_file";
+	}
 }
 
 

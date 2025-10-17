@@ -16,6 +16,8 @@ TEIANAtext := ${WORK}/tei-ana-text
 TEI := ${DIST}/tei
 TEIANA := ${DIST}/tei-ana
 TEITOK := ${DIST}/teitok
+TEITOK-TOK := ${TEITOK}/xmlfiles
+TEITOK-STANDOFF := ${TEITOK}/Annotations
 UDPIPE := ${WORK}/udpipe
 NAMETAG := ${WORK}/nametag
 cNAMETAG := ${WORK}/nametag-conllu
@@ -135,12 +137,10 @@ dist-tei-ana: $(TEIANA)
 			projectConfig=$(CONFIG) \
 	    $(CORPUS_TEMPLATE)
 
-dist-teitok: $(TEITOK)
+dist-teitok: $(TEITOK-TOK) $(TEITOK-STANDOFF)
 	find $(TEIANA) -type f -printf "%P\n" |grep -v '$(CORPUS_ID)\.'| sed -E "s/(\.ana)?\.xml$$//" |sort > ${WORK}/dist-tei-ana.fl
 	cat ${WORK}/dist-tei-ana.fl \
-	  | xargs -I {} $(PERL) scripts/tei2teitok.pl \
-		                            --in $(TEIANA)/{}.ana.xml \
-		                            --out $(TEITOK)/{}.tt.xml
+	  | parallel -P$(THREADS) '$(PERL) scripts/tei2teitok.pl --in $(TEIANA)/{}.ana.xml --out $(TEITOK-TOK)/{}.tt.xml --outdir-standoff $(TEITOK-STANDOFF)'
 
 $(addprefix slurm-,  $(SLURM-TASKS)): slurm-%: $(LOGDIR)
 	@echo "Submitting $* to slurm..."
@@ -156,7 +156,7 @@ $(addprefix slurm-,  $(SLURM-TASKS)): slurm-%: $(LOGDIR)
 		--wrap="cd $(CURDIR) && $(MAKE) $* THREADS=$(SLURM_CPUS) $(SLURM_PERL)" ); \
 	echo "Submitted job $$JOBID for $*"
 
-$(TEI) $(TEIANA) $(TEITOK) $(TEItext) $(TEIheader) $(TEIANAtext) $(UDPIPE) $(NAMETAG) $(cNAMETAG) $(cSOUDEC) $(SOUDEC) $(LOGDIR):
+$(TEI) $(TEIANA) $(TEITOK-TOK) $(TEITOK-STANDOFF) $(TEItext) $(TEIheader) $(TEIANAtext) $(UDPIPE) $(NAMETAG) $(cNAMETAG) $(cSOUDEC) $(SOUDEC) $(LOGDIR):
 	mkdir -p $@
 
 
