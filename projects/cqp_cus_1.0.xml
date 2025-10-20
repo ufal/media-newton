@@ -1,0 +1,68 @@
+<?xml version="1.0"?>
+<ttsettings>
+  <cqp corpus="CUS" searchfolder="xmlfiles" defaults="" boxtype="pegdiv">
+    <pattributes>
+      <item key="word"/>
+      <item key="form" display="Normalized form"/>
+      <item key="upos" display="PoS" type="select"/>
+      <item key="xpos" display="tag"/>
+      <item key="feats" display="features" type="udfeats"/>
+      <item key="lemma" display="lemma"/>
+      <item key="deprel" display="Dependency relation" type="select"/>
+      <item key="head" display="Head id" type="ref" nosearch="1"/>
+      <item key="head_upos" display="Head PoS" type="select"/>
+      <item key="head_xpos" display="Head tag"/>
+      <item key="head_feats" display="Head features"/>
+      <item key="head_lemma" display="Head lemma"/>
+      <item key="head_deprel" display="Head Dependency relation" type="select"/>
+      <item key="reg" display="Normalized form"/>
+      <item key="deps" display="Extra dependencies" nosearch="1"/>
+    </pattributes>
+    <sattributes>
+      <item level="name" key="name" display="Named Entity">
+        <item key="type" type="select" xpath="@type" display="CoNLL type"/>
+        <item key="cnec" type="select" xpath="@cnec" display="CNEC type"/>
+      </item>
+      <item level="text" key="text" display="Filter Documents">
+        <item key="title" type="select" xpath="/TEI/teiHeader/fileDesc/titleStmt/title[@type='main']" display="Title" sort="string"/>
+        <item key="media" type="select" xpath="/TEI/teiHeader/fileDesc/sourceDesc/bibl/title[@type='main']" display="Media" sort="string"/>
+        <item key="submedia" xpath="/TEI/teiHeader/fileDesc/sourceDesc/bibl/title[@type='sub']" display="Submedia" sort="string"/>
+        <item key="type" type="select" xpath="/TEI/teiHeader/fileDesc/sourceDesc/bibl/@type" display="Media type" sort="string"/>
+        <item key="published" type="string" xpath="/TEI/teiHeader/fileDesc/sourceDesc/bibl/date/@when" display="Publishing date" sort="string"/>
+        <item key="author" type="select" xpath="/TEI/teiHeader/fileDesc/sourceDesc/bibl/author" display="Author" values="multi" multisep="," sort="string"/>
+        <item key="section" type="select" xpath="/TEI/teiHeader/fileDesc/sourceDesc/bibl/title[@type='section']" display="Section" values="multi" multisep="," sort="string"/>
+      </item>
+      <item level="s" key="s"/>
+      <item searchtype="context" subtype="u"/>
+    </sattributes>
+    <annotations>
+      <item key="attrib" filename="attrib" display="Attribution">
+        <item key="atype" type="select" display="Attribution Role"/>
+        <item key="asource" display="Attribution Source"/>
+        <item key="asignal" display="Attribution Signal"/>
+        <item key="id" display="Attribution ID"/>
+      </item>
+    </annotations>
+  </cqp>
+  <xmlfile defaultform="form" defaultview="interpret" xpath="//text" paged="0" textnotes="1" nospace="2" linebreaks="1" sattributes="">
+    <pattributes>
+      <forms>
+        <item key="form" display="Written form" color="#990000" admin="1"/>
+        <item key="reg" display="Regularized form" inherit="expan" color="#990099"/>
+      </forms>
+      <tags>
+        <item key="upos" display="PoS"/>
+        <item key="feats" display="Features" values="multi" multisep="|" type="udfeats"/>
+        <item key="lemma" display="Lemma"/>
+        <item key="deprel" display="DepRel"/>
+        <item key="xpos" display="National POS tag"/>
+        <item key="head" display="Dependency head" type="ref"/>
+      </tags>
+    </pattributes>
+    <sattributes/>
+  </xmlfile>
+  <defaults>
+    <base url="https://quest.ms.mff.cuni.cz/teitok-dev/teitok/cus-1.0/"/>
+    <query skip="kontext,pmltq"/>
+  </defaults>
+</ttsettings>

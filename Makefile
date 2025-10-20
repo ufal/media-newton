@@ -10,6 +10,7 @@ PERL := $(shell test -n "$(USE_PERL)" && echo -n "$(PERLBREW_ROOT)/perls/$(USE_P
 SLURM_PERL := $(shell test -n "$(USE_PERL)" && echo -n "USE_PERL=$(USE_PERL)")
 
 
+INpatched := ${WORK}/source-patched
 TEIheader := ${WORK}/tei-header
 TEItext := ${WORK}/tei-text
 TEIANAtext := ${WORK}/tei-ana-text
@@ -18,6 +19,8 @@ TEIANA := ${DIST}/tei-ana
 TEITOK := ${DIST}/teitok
 TEITOK-TOK := ${TEITOK}/xmlfiles
 TEITOK-STANDOFF := ${TEITOK}/Annotations
+TEITOK-TMP := ${TEITOK}/tmp
+TEITOK-CQP := ${TEITOK}/cqp
 UDPIPE := ${WORK}/udpipe
 NAMETAG := ${WORK}/nametag
 cNAMETAG := ${WORK}/nametag-conllu
@@ -27,6 +30,7 @@ SOUDEC :=  ${WORK}/soudec
 LOGDIR := $(shell pwd)/logs/
 
 CONFIG := $(shell pwd)/projects/config_cus_1.0.xml
+CQPsettings := $(shell pwd)/projects/cqp_cus_1.0.xml
 PREFIX := cus_
 CORPUS_ID := $(PREFIX)corpus
 CORPUS_TEMPLATE := $(WORK)/$(CORPUS_ID).xml
@@ -43,7 +47,7 @@ DEBUG :=
 XSLDEBUG := $(shell test -n "$(DEBUG)" && echo -n "limit=2")
 
 
-DISTRO-TASKS := tei tei-ana teitok
+DISTRO-TASKS := tei tei-ana teitok teitok2cqp
 SLURM-TASKS := $(addprefix dist-, $(DISTRO-TASKS)) teiTextAnaNER2teiSOUDEC DEV
 
 SLURM_PARTITION ?= cpu-troja,cpu-ms
@@ -54,13 +58,16 @@ THREADS ?= 1
 
 -include Makefile.dev
 
+patchSource: $(INpatched)
+	find $(IN) -type f -name "*.xml" | parallel -P$(THREADS) "cat {} | perl -C -pe 's/\x{00AD}//g' > $(INpatched)/{/}"
+
 # convert component files to TEI/text
 convert2teiText: $(TEItext)
-	find $(IN) -type f -name "*.xml" | xargs -I {} $(SAXON) outDir=$< prefix=$(PREFIX) $(XSLDEBUG) -xsl:scripts/newton2teiText.xsl {}
+	find $(INpatched) -type f -name "*.xml" | xargs -I {} $(SAXON) outDir=$< prefix=$(PREFIX) $(XSLDEBUG) -xsl:scripts/newton2teiText.xsl {}
 
 # convert component files to TEI/teiHeader
 convert2teiHeader: $(TEIheader)
-	find $(IN) -type f -name "*.xml" | xargs -I {} $(SAXON) outDir=$< prefix=$(PREFIX) $(XSLDEBUG) -xsl:scripts/newton2teiHeader.xsl {}
+	find $(INpatched) -type f -name "*.xml" | xargs -I {} $(SAXON) outDir=$< prefix=$(PREFIX) $(XSLDEBUG) -xsl:scripts/newton2teiHeader.xsl {}
 
 teiText2teiTextAnaUD: $(UDPIPE)
 	find $(TEItext) -type f -printf "%P\n" |sort > $(UDPIPE).fl
@@ -142,6 +149,14 @@ dist-teitok: $(TEITOK-TOK) $(TEITOK-STANDOFF)
 	cat ${WORK}/dist-tei-ana.fl \
 	  | parallel -P$(THREADS) '$(PERL) scripts/tei2teitok.pl --in $(TEIANA)/{}.ana.xml --out $(TEITOK-TOK)/{}.tt.xml --outdir-standoff $(TEITOK-STANDOFF)'
 
+dist-teitok2cqp: $(TEITOK-TMP) $(TEITOK-CQP) check-prereq-teitok2cqp
+	settings=`realpath $(CQPsettings)`;\
+	teitok2cqp=`realpath scripts/teitok2cqp.pl`;\
+	cd $(TEITOK); \
+	perl $$teitok2cqp --setfile=$$settings
+
+
+
 $(addprefix slurm-,  $(SLURM-TASKS)): slurm-%: $(LOGDIR)
 	@echo "Submitting $* to slurm..."
 	@awk 'BEGIN { if ($(JAVA-MEMORY-GB) <= $(SLURM_MEM)) print "WARNING: $(JAVA-MEMORY-GB)G(Jave memory) <  $(SLURM_MEM)G (machine memory)"; else print "Memory test: passed"; }'
@@ -156,7 +171,7 @@ $(addprefix slurm-,  $(SLURM-TASKS)): slurm-%: $(LOGDIR)
 		--wrap="cd $(CURDIR) && $(MAKE) $* THREADS=$(SLURM_CPUS) $(SLURM_PERL)" ); \
 	echo "Submitted job $$JOBID for $*"
 
-$(TEI) $(TEIANA) $(TEITOK-TOK) $(TEITOK-STANDOFF) $(TEItext) $(TEIheader) $(TEIANAtext) $(UDPIPE) $(NAMETAG) $(cNAMETAG) $(cSOUDEC) $(SOUDEC) $(LOGDIR):
+$(INpatched) $(TEI) $(TEIANA) $(TEITOK-TOK) $(TEITOK-STANDOFF) $(TEITOK-TMP) $(TEITOK-CQP) $(TEItext) $(TEIheader) $(TEIANAtext) $(UDPIPE) $(NAMETAG) $(cNAMETAG) $(cSOUDEC) $(SOUDEC) $(LOGDIR):
 	mkdir -p $@
 
 
@@ -195,3 +210,7 @@ parczech: scripts/resources
 scripts/resources:
 	mkdir $@
 
+check-prereq-teitok2cqp:
+	@test -f $(CQPsettings) || (echo "missing cqp setting file CQPsettings=$(CQPsettings)" && exit 1)
+	@test -f scripts/bin/tt-cwb-encode || (echo "missing scripts/bin/tt-cwb-encode" && exit 1)
+	@test -f scripts/bin/cwb-makeall || (echo "missing scripts/bin/cwb-makeall" && exit 1)
