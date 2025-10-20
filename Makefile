@@ -29,10 +29,12 @@ SOUDEC :=  ${WORK}/soudec
 
 LOGDIR := $(shell pwd)/logs/
 
+CORPUS_ID := cus
 CONFIG := $(shell pwd)/projects/config_cus_1.0.xml
 CQPsettings := $(shell pwd)/projects/cqp_cus_1.0.xml
-PREFIX := cus_
-CORPUS_ID := $(PREFIX)corpus
+CQPPath := /mnt/nfs/teitok/teitok-dev/cus-1.0/cqp
+
+PREFIX := $(CORPUS_ID)_
 CORPUS_TEMPLATE := $(WORK)/$(CORPUS_ID).xml
 
 SCHEMA_TEI := tei_all
@@ -154,6 +156,9 @@ dist-teitok2cqp: $(TEITOK-TMP) $(TEITOK-CQP) check-prereq-teitok2cqp
 	teitok2cqp=`realpath scripts/teitok2cqp.pl`;\
 	cd $(TEITOK); \
 	perl $$teitok2cqp --setfile=$$settings
+	@test -f $(TEITOK-CQP)/$(CORPUS_ID) \
+	  && sed -i s@$(TEITOK-CQP)@$(CQPPath)@  $(TEITOK-CQP)/$(CORPUS_ID) \
+	  || echo "ERROR: missing $(TEITOK-CQP)/$(CORPUS_ID)"
 
 
 
