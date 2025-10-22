@@ -191,6 +191,10 @@ $(SCHEMA):
 	wget https://tei-c.org/release/xml/tei/custom/schema/relaxng/$(SCHEMA_TEI).rng -O $@
 
 
+info-cqp:
+	@echo "Currently indexed words:" $$(numfmt --to=iec $$(( $$(stat -c%s "$(TEITOK-CQP)/word.corpus") / 4 )))
+	@test -f $(TEITOK-TMP)/recqp.pid && echo "Indexing status: RUNNING" || echo "Indexing status: DONE" 
+
 ##################
 prereq: parczech soudec
 

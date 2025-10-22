@@ -105,6 +105,14 @@ my %standoff = (
 	ATTRIBUTION => {
 		type_prefix => 'a',
 		ana_prefix => 'attrib',
+		value_patch => {
+			  'phrase' => 'PHRASE',
+				'anonymous' => 'SOURCE:anonymous',
+				'anonymous-partial' => 'SOURCE:anonymous-partial',
+				'unofficial' => 'SOURCE:unofficial',
+				'official-non-political' => 'SOURCE:official-non-political',
+				'official-political' => 'SOURCE:official-political',
+		}
 	}
 );
 
@@ -137,6 +145,7 @@ for my $standoff_type (keys %standoff) {
 		}
 		my $ana = $span->getAttribute('ana');
     $ana =~ s/.*\Q$standoff{$standoff_type}->{ana_prefix}\E:([^ ]*).*/$1/;
+		$ana = $standoff{$standoff_type}->{value_patch}->{$ana} // $ana;
 		$span->setAttribute($standoff{$standoff_type}->{type_prefix}."type",$ana);
 		$span->setAttribute("corresp",$span->getAttribute('target'));
 	}
