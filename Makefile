@@ -120,7 +120,6 @@ corpus-template:
 	echo '<teiCorpus xmlns="http://www.tei-c.org/ns/1.0"' >> $(CORPUS_TEMPLATE)
 	echo '     xml:id="$(CORPUS_ID)"' >> $(CORPUS_TEMPLATE)
 	echo '     xml:lang="cs">' >> $(CORPUS_TEMPLATE)
-	echo '   <teiHeader/>' >> $(CORPUS_TEMPLATE)
 	find $(TEIheader) -type f -name "*.xml" -printf "%P\n"| xargs -I {} echo '   <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="'{}'"/>' >> $(CORPUS_TEMPLATE)
 	echo '</teiCorpus>' >> $(CORPUS_TEMPLATE)
 
