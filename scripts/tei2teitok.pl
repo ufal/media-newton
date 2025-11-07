@@ -39,6 +39,15 @@ eval {
 
 my %id2node;
 
+# add year, month and day to bibl/date/@when...
+if( my ($node) = $xml->findnodes("//bibl/date[\@when]")) {
+	my $when = $node->getAttribute('when');
+	$when =~ s/-//g;
+	$node->setAttribute('whenday',substr($when,0,8));
+	$node->setAttribute('whenmonth',substr($when,0,6));
+	$node->setAttribute('whenyear',substr($when,0,4));
+}
+
 # Rename <w> to <tok>
 my $rename_attr = {msd => 'feats', pos => 'upos'};
 foreach my $node ( $xml->findnodes("//w | //pc") ) {
@@ -94,7 +103,7 @@ for my $base ( keys %id2node ) {
 	my $head = $id2node{$base}->getAttribute("head");
 	if ( $id2node{$base} && $head && $id2node{$head} ) {
 		for my $att (qw/lemma upos xpos feats type deprel/) {
-      $id2node{$base}->setAttribute("head_$att", $id2node{$head}->getAttribute($att)) if $id2node{$head}->hasAttribute($att)
+      $id2node{$base}->setAttribute("head$att", $id2node{$head}->getAttribute($att)) if $id2node{$head}->hasAttribute($att)
 		}
 	};
 };
