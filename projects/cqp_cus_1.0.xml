@@ -33,7 +33,6 @@
         <item key="month" type="string" xpath="/TEI/teiHeader/fileDesc/sourceDesc/bibl/date/@whenmonth" display="Publishing month" sort="string"/>
         <item key="day" type="string" xpath="/TEI/teiHeader/fileDesc/sourceDesc/bibl/date/@whenday" display="Publishing day" sort="string"/>
         <item key="author" type="select" xpath="/TEI/teiHeader/fileDesc/sourceDesc/bibl/author" display="Author" values="multi" multisep="," sort="string"/>
-        <item key="section" type="select" xpath="/TEI/teiHeader/fileDesc/sourceDesc/bibl/title[@type='section']" display="Section" values="multi" multisep="," sort="string"/>
       </item>
       <item level="s" key="s"/>
       <item searchtype="context" subtype="u"/>
