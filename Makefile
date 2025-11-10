@@ -198,9 +198,8 @@ info-cqp:
 prereq: parczech soudec
 
 soudec: scripts/resources
-	git clone https://github.com/matyaskopp/soudec.git $</soudec ;\
-	cd $</soudec ;\
-	git checkout conllu-input
+	git clone https://github.com/ufal/soudec.git $</soudec 
+
 
 parczech: scripts/resources
 	git clone https://github.com/ufal/ParCzech.git --no-checkout $</ParCzech --depth 10 -b master ;\
